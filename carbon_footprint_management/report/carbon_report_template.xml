@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_carbon_report" model="ir.actions.report">
+        <field name="name">Rapport de durabilité</field>
+        <field name="model">carbon.report</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">carbon_footprint_management.report_carbon_report</field>
+        <field name="report_file">carbon_footprint_management.report_carbon_report</field>
+        <field name="print_report_name">'Rapport-durabilite-%s' % object.name</field>
+        <field name="binding_model_id" ref="model_carbon_report"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_carbon_report">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h1 t-out="o.name"/>
+                        <p>Période : <span t-field="o.date_from"/> – <span t-field="o.date_to"/>
+                           · Référentiel : <span t-field="o.framework"/></p>
+
+                        <h3>E1-6 – Émissions brutes de gaz à effet de serre (tCO2e)</h3>
+                        <table class="table table-sm">
+                            <tbody>
+                                <tr><th>Scope 1</th><td class="text-end"><t t-out="'%.3f' % o.scope1_t"/></td></tr>
+                                <tr><th>Scope 2 (basé sur la localisation)</th><td class="text-end"><t t-out="'%.3f' % o.scope2_t"/></td></tr>
+                                <tr><th>Scope 3</th><td class="text-end"><t t-out="'%.3f' % o.scope3_t"/></td></tr>
+                                <tr><th>Total</th><td class="text-end"><strong><t t-out="'%.3f' % o.total_t"/></strong></td></tr>
+                                <tr><th>Intensité GES (tCO2e par million de CA net)</th><td class="text-end"><t t-out="'%.3f' % o.intensity"/></td></tr>
+                            </tbody>
+                        </table>
+
+                        <h3>E1-5 – Consommation d'énergie</h3>
+                        <table class="table table-sm">
+                            <tbody>
+                                <tr><th>Électricité (kWh)</th><td class="text-end"><t t-out="'%.0f' % o.electricity_kwh"/></td></tr>
+                                <tr><th>Gaz (kWh)</th><td class="text-end"><t t-out="'%.0f' % o.gas_kwh"/></td></tr>
+                            </tbody>
+                        </table>
+
+                        <h3>E1-4 – Tendance et objectif</h3>
+                        <table class="table table-sm">
+                            <tbody>
+                                <tr><th>Période précédente (tCO2e)</th><td class="text-end"><t t-out="'%.3f' % o.previous_total_t"/></td></tr>
+                                <tr><th>Variation</th><td class="text-end"><t t-out="'%.1f' % o.change_pct"/> %</td></tr>
+                                <tr t-if="o.target_total_t"><th>Objectif (tCO2e)</th><td class="text-end"><t t-out="'%.3f' % o.target_total_t"/></td></tr>
+                                <tr t-if="o.target_total_t"><th>Écart à l'objectif (tCO2e)</th><td class="text-end"><t t-out="'%.3f' % o.target_gap_t"/></td></tr>
+                            </tbody>
+                        </table>
+
+                        <h3>Chaîne d'approvisionnement</h3>
+                        <table class="table table-sm">
+                            <tbody>
+                                <tr><th>Fournisseurs actifs</th><td class="text-end"><t t-out="o.supplier_count"/></td></tr>
+                                <tr><th>Évalués ESG</th><td class="text-end"><t t-out="'%.1f' % o.supplier_evaluated_pct"/> %</td></tr>
+                                <tr><th>Score ESG moyen</th><td class="text-end"><t t-out="'%.1f' % o.supplier_avg_esg"/> / 100</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h3>Méthodologie et limites</h3>
+                        <div t-field="o.methodology"/>
+                        <div t-if="o.notes">
+                            <h3>Commentaires</h3>
+                            <div t-field="o.notes"/>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

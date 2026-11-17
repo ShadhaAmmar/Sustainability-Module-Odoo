@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_carbon_root" name="Durabilité &amp; Carbone" sequence="55"
+              web_icon="carbon_footprint_management,static/description/icon.png"
+              groups="carbon_footprint_management.group_carbon_user"/>
+
+    <menuitem id="menu_carbon_footprint_root" name="Empreinte carbone" parent="menu_carbon_root" sequence="10"/>
+    <menuitem id="menu_carbon_footprint" name="Empreintes" parent="menu_carbon_footprint_root"
+              action="action_carbon_footprint" sequence="10"/>
+    <menuitem id="menu_carbon_certificate" name="Certificats carbone" parent="menu_carbon_footprint_root"
+              action="action_carbon_certificate" sequence="20"/>
+
+    <menuitem id="menu_esg_root" name="Fournisseurs ESG" parent="menu_carbon_root" sequence="20"/>
+    <menuitem id="menu_esg_scoring" name="Évaluations" parent="menu_esg_root"
+              action="action_esg_scoring" sequence="10"/>
+
+    <menuitem id="menu_carbon_reporting" name="Rapports" parent="menu_carbon_root" sequence="30"/>
+    <menuitem id="menu_carbon_report" name="Rapports de durabilité" parent="menu_carbon_reporting"
+              action="action_carbon_report" sequence="10"/>
+
+    <menuitem id="menu_carbon_config" name="Configuration" parent="menu_carbon_root" sequence="100"
+              groups="carbon_footprint_management.group_carbon_manager"/>
+    <menuitem id="menu_carbon_factor" name="Facteurs d'émission" parent="menu_carbon_config"
+              action="action_carbon_factor" sequence="10"/>
+    <menuitem id="menu_esg_criteria" name="Critères ESG" parent="menu_carbon_config"
+              action="action_esg_criteria" sequence="20"/>
+</odoo>

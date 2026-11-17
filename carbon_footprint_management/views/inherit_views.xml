@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Produit -->
+    <record id="product_template_form_carbon" model="ir.ui.view">
+        <field name="name">product.template.form.carbon</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Durabilité" name="carbon">
+                    <group>
+                        <group string="Empreinte carbone">
+                            <field name="carbon_intensity"/>
+                            <field name="carbon_intensity_source"/>
+                            <field name="carbon_intensity_note"/>
+                            <field name="carbon_in_stock"/>
+                        </group>
+                        <group string="Circularité">
+                            <field name="recyclable"/>
+                            <field name="recycled_content"/>
+                        </group>
+                    </group>
+                    <group string="Alternatives écologiques">
+                        <field name="eco_alternative_ids" widget="many2many_tags" nolabel="1"/>
+                    </group>
+                    <button name="action_carbon_alternatives" type="object" class="btn-secondary"
+                            string="Suggérer des alternatives écologiques" invisible="not id"/>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Achats -->
+    <record id="purchase_order_form_carbon" model="ir.ui.view">
+        <field name="name">purchase.order.form.carbon</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_carbon_footprint" type="object" string="Empreinte carbone"
+                        invisible="state == 'cancel'"
+                        groups="carbon_footprint_management.group_carbon_user"/>
+            </xpath>
+            <field name="partner_id" position="after">
+                <field name="supplier_esg_rating" widget="badge" invisible="not supplier_esg_rating"/>
+            </field>
+            <xpath expr="//field[@name='order_line']/tree" position="inside">
+                <field name="carbon_intensity" optional="hide"/>
+                <field name="line_carbon_emission" optional="show"/>
+                <button name="action_carbon_alternatives" type="object" icon="fa-leaf"
+                        title="Alternatives écologiques"
+                        invisible="not product_id or parent.state not in ('draft', 'sent')"/>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="Carbone" name="carbon">
+                    <group>
+                        <field name="estimated_carbon_emission"/>
+                        <field name="supplier_esg_score"/>
+                        <field name="carbon_footprint_count"/>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Ventes -->
+    <record id="sale_order_form_carbon" model="ir.ui.view">
+        <field name="name">sale.order.form.carbon</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_carbon_footprint" type="object" string="Empreinte carbone"
+                        invisible="state == 'cancel'"
+                        groups="carbon_footprint_management.group_carbon_user"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Nomenclature -->
+    <record id="mrp_bom_form_carbon" model="ir.ui.view">
+        <field name="name">mrp.bom.form.carbon</field>
+        <field name="model">mrp.bom</field>
+        <field name="inherit_id" ref="mrp.mrp_bom_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Carbone" name="carbon">
+                    <group>
+                        <field name="production_energy_kwh"/>
+                        <field name="carbon_intensity_computed"/>
+                    </group>
+                    <button name="action_apply_carbon_intensity" type="object" class="btn-secondary"
+                            string="Appliquer au produit fini" invisible="not id"/>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Ordre de fabrication -->
+    <record id="mrp_production_form_carbon" model="ir.ui.view">
+        <field name="name">mrp.production.form.carbon</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_carbon_footprint" type="object" string="Empreinte carbone"
+                        invisible="state in ('draft', 'cancel')"
+                        groups="carbon_footprint_management.group_carbon_user"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Comptabilité -->
+    <record id="account_move_form_carbon" model="ir.ui.view">
+        <field name="name">account.move.form.carbon</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Carbone" name="carbon"
+                      invisible="move_type not in ('out_invoice', 'out_refund', 'in_invoice', 'in_refund')">
+                    <group>
+                        <field name="carbon_emission"/>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

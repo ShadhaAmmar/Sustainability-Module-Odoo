@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_carbon_report_tree" model="ir.ui.view">
+        <field name="name">carbon.report.tree</field>
+        <field name="model">carbon.report</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="framework"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="total_t"/>
+                <field name="change_pct"/>
+                <field name="state" widget="badge" decoration-success="state == 'published'"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_carbon_report_form" model="ir.ui.view">
+        <field name="name">carbon.report.form</field>
+        <field name="model">carbon.report</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_compute" type="object" string="Calculer" class="oe_highlight"
+                            invisible="state == 'published'"/>
+                    <button name="action_print" type="object" string="Imprimer le rapport"
+                            invisible="state == 'draft'"/>
+                    <button name="action_publish" type="object" string="Publier" invisible="state != 'computed'"
+                            groups="carbon_footprint_management.group_carbon_manager"/>
+                    <button name="action_draft" type="object" string="Remettre en brouillon"
+                            invisible="state == 'draft'"
+                            groups="carbon_footprint_management.group_carbon_manager"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_title"><h1><field name="name" placeholder="Rapport de durabilité 2026"/></h1></div>
+                    <group>
+                        <group>
+                            <field name="framework" readonly="state == 'published'"/>
+                            <field name="date_from" readonly="state == 'published'"/>
+                            <field name="date_to" readonly="state == 'published'"/>
+                        </group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="target_total_t" readonly="state == 'published'"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Émissions (ESRS E1-6)" name="ghg">
+                            <group>
+                                <group string="Émissions brutes de GES">
+                                    <field name="scope1_t"/>
+                                    <field name="scope2_t"/>
+                                    <field name="scope3_t"/>
+                                    <field name="total_t" class="fw-bold"/>
+                                    <field name="footprint_count"/>
+                                </group>
+                                <group string="Tendance et objectif (E1-4)">
+                                    <field name="previous_total_t"/>
+                                    <field name="change_pct"/>
+                                    <field name="target_gap_t"/>
+                                    <field name="revenue"/>
+                                    <field name="intensity"/>
+                                </group>
+                                <group string="Énergie (E1-5)">
+                                    <field name="electricity_kwh"/>
+                                    <field name="gas_kwh"/>
+                                </group>
+                                <group string="Chaîne d'approvisionnement">
+                                    <field name="supplier_count"/>
+                                    <field name="supplier_evaluated_pct"/>
+                                    <field name="supplier_avg_esg"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Méthodologie" name="methodology">
+                            <field name="methodology" readonly="state == 'published'"/>
+                        </page>
+                        <page string="Commentaires" name="notes">
+                            <field name="notes" readonly="state == 'published'"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_carbon_report" model="ir.actions.act_window">
+        <field name="name">Rapports de durabilité</field>
+        <field name="res_model">carbon.report</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

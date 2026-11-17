@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_carbon_certificate" model="ir.actions.report">
+        <field name="name">Certificat carbone</field>
+        <field name="model">carbon.certificate</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">carbon_footprint_management.report_carbon_certificate</field>
+        <field name="report_file">carbon_footprint_management.report_carbon_certificate</field>
+        <field name="print_report_name">'Certificat-%s' % object.name.replace('/', '-')</field>
+        <field name="binding_model_id" ref="model_carbon_certificate"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_carbon_certificate">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <div class="text-center mb-4">
+                            <h1>Certificat d'empreinte carbone</h1>
+                            <h4 t-out="o.name"/>
+                        </div>
+                        <p>Le présent certificat est délivré à <strong t-field="o.partner_id"/>
+                           par <strong t-field="o.company_id"/>.</p>
+                        <table class="table table-sm">
+                            <tbody>
+                                <tr><th>Référence de l'empreinte</th><td t-out="o.footprint_id.name"/></tr>
+                                <tr><th>Date d'émission</th><td><span t-field="o.date"/></td></tr>
+                                <tr><th>Valable jusqu'au</th><td><span t-field="o.validity_date"/></td></tr>
+                                <tr><th>Émissions totales</th><td><t t-out="'%.2f' % o.emission"/> kg CO2e</td></tr>
+                                <tr><th>Dont Scope 1 / 2 / 3</th>
+                                    <td><t t-out="'%.2f' % o.footprint_id.scope1_emission"/> /
+                                        <t t-out="'%.2f' % o.footprint_id.scope2_emission"/> /
+                                        <t t-out="'%.2f' % o.footprint_id.scope3_emission"/> kg CO2e</td></tr>
+                                <tr><th>Compensation</th><td><t t-out="'%.2f' % o.offset_kg"/> kg CO2e</td></tr>
+                                <tr><th>Émissions nettes</th><td><strong><t t-out="'%.2f' % o.net_emission"/> kg CO2e</strong></td></tr>
+                            </tbody>
+                        </table>
+                        <p t-if="o.certificate_type == 'neutral'" class="text-success">
+                            <strong>Les émissions déclarées sont intégralement compensées.</strong>
+                        </p>
+                        <h5>Méthodologie</h5>
+                        <p t-out="o.methodology"/>
+                        <p class="text-muted small" t-if="not o.verified_by">
+                            Déclaration établie par l'entreprise, non vérifiée par un organisme tiers indépendant.
+                        </p>
+                        <p class="text-muted small" t-else="">
+                            Vérifié par <t t-out="o.verified_by.name"/> le <span t-field="o.verification_date"/>.
+                        </p>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

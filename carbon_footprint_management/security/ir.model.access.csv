@@ -1,0 +1,19 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_carbon_factor_user,carbon.factor user,model_carbon_factor,group_carbon_user,1,0,0,0
+access_carbon_factor_manager,carbon.factor manager,model_carbon_factor,group_carbon_manager,1,1,1,1
+access_carbon_footprint_user,carbon.footprint user,model_carbon_footprint,group_carbon_user,1,1,1,1
+access_carbon_footprint_manager,carbon.footprint manager,model_carbon_footprint,group_carbon_manager,1,1,1,1
+access_carbon_footprint_line_user,carbon.footprint.line user,model_carbon_footprint_line,group_carbon_user,1,1,1,1
+access_carbon_footprint_line_manager,carbon.footprint.line manager,model_carbon_footprint_line,group_carbon_manager,1,1,1,1
+access_carbon_certificate_user,carbon.certificate user,model_carbon_certificate,group_carbon_user,1,1,1,0
+access_carbon_certificate_manager,carbon.certificate manager,model_carbon_certificate,group_carbon_manager,1,1,1,1
+access_esg_criteria_user,esg.criteria user,model_esg_criteria,group_carbon_user,1,0,0,0
+access_esg_criteria_manager,esg.criteria manager,model_esg_criteria,group_carbon_manager,1,1,1,1
+access_esg_scoring_user,esg.scoring user,model_esg_scoring,group_carbon_user,1,1,1,0
+access_esg_scoring_manager,esg.scoring manager,model_esg_scoring,group_carbon_manager,1,1,1,1
+access_esg_scoring_line_user,esg.scoring.line user,model_esg_scoring_line,group_carbon_user,1,1,1,1
+access_esg_scoring_line_manager,esg.scoring.line manager,model_esg_scoring_line,group_carbon_manager,1,1,1,1
+access_carbon_report_user,carbon.report user,model_carbon_report,group_carbon_user,1,0,0,0
+access_carbon_report_manager,carbon.report manager,model_carbon_report,group_carbon_manager,1,1,1,1
+access_carbon_alternative_wizard,carbon.alternative.wizard,model_carbon_alternative_wizard,base.group_user,1,1,1,1
+access_carbon_alternative_wizard_line,carbon.alternative.wizard.line,model_carbon_alternative_wizard_line,base.group_user,1,1,1,1

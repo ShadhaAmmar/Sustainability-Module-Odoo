@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_carbon_certificate_tree" model="ir.ui.view">
+        <field name="name">carbon.certificate.tree</field>
+        <field name="model">carbon.certificate</field>
+        <field name="arch" type="xml">
+            <tree decoration-muted="state == 'cancelled'">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="partner_id"/>
+                <field name="emission"/>
+                <field name="offset_kg"/>
+                <field name="certificate_type"/>
+                <field name="state" widget="badge" decoration-success="state == 'issued'"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_carbon_certificate_form" model="ir.ui.view">
+        <field name="name">carbon.certificate.form</field>
+        <field name="model">carbon.certificate</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_issue" type="object" string="Émettre" class="oe_highlight"
+                            invisible="state != 'draft'"/>
+                    <button name="action_print" type="object" string="Imprimer" invisible="state != 'issued'"/>
+                    <button name="action_verify" type="object" string="Marquer comme vérifié"
+                            invisible="state != 'issued' or verified_by"
+                            groups="carbon_footprint_management.group_carbon_manager"/>
+                    <button name="action_cancel" type="object" string="Annuler" invisible="state == 'cancelled'"
+                            groups="carbon_footprint_management.group_carbon_manager"/>
+                    <button name="action_draft" type="object" string="Remettre en brouillon"
+                            invisible="state != 'cancelled'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,issued"/>
+                </header>
+                <sheet>
+                    <div class="oe_title"><h1><field name="name"/></h1></div>
+                    <group>
+                        <group>
+                            <field name="footprint_id" readonly="state != 'draft'"/>
+                            <field name="partner_id" readonly="state != 'draft'"/>
+                            <field name="date" readonly="state != 'draft'"/>
+                            <field name="validity_date" readonly="state != 'draft'"/>
+                        </group>
+                        <group>
+                            <field name="emission"/>
+                            <field name="offset_kg" readonly="state != 'draft'"/>
+                            <field name="net_emission"/>
+                            <field name="certificate_type"/>
+                            <field name="verified_by"/>
+                            <field name="verification_date"/>
+                        </group>
+                    </group>
+                    <group string="Méthodologie">
+                        <field name="methodology" nolabel="1" readonly="state != 'draft'"/>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_carbon_certificate_search" model="ir.ui.view">
+        <field name="name">carbon.certificate.search</field>
+        <field name="model">carbon.certificate</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <filter name="issued" string="Émis" domain="[('state', '=', 'issued')]"/>
+                <group expand="0" string="Regrouper par">
+                    <filter name="group_partner" string="Client" context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_state" string="Statut" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_carbon_certificate" model="ir.actions.act_window">
+        <field name="name">Certificats carbone</field>
+        <field name="res_model">carbon.certificate</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

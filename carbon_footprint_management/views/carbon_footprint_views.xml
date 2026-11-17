@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_carbon_footprint_tree" model="ir.ui.view">
+        <field name="name">carbon.footprint.tree</field>
+        <field name="model">carbon.footprint</field>
+        <field name="arch" type="xml">
+            <tree decoration-muted="state == 'draft'" decoration-success="state == 'certified'">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="source"/>
+                <field name="partner_id"/>
+                <field name="scope1_emission" optional="hide" sum="Scope 1"/>
+                <field name="scope2_emission" optional="hide" sum="Scope 2"/>
+                <field name="scope3_emission" optional="hide" sum="Scope 3"/>
+                <field name="total_emission" sum="Total (kg CO2e)"/>
+                <field name="carbon_cost" optional="show" sum="Coût carbone"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+                <field name="state" widget="badge" decoration-info="state == 'validated'"
+                       decoration-success="state == 'certified'"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_carbon_footprint_form" model="ir.ui.view">
+        <field name="name">carbon.footprint.form</field>
+        <field name="model">carbon.footprint</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_validate" type="object" string="Valider" class="oe_highlight"
+                            invisible="state != 'draft'"
+                            groups="carbon_footprint_management.group_carbon_manager"/>
+                    <button name="action_certify" type="object" string="Générer le certificat"
+                            class="oe_highlight" invisible="state == 'draft'"
+                            groups="carbon_footprint_management.group_carbon_manager"/>
+                    <button name="action_draft" type="object" string="Remettre en brouillon"
+                            invisible="state != 'validated'"
+                            groups="carbon_footprint_management.group_carbon_manager"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,validated,certified"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_certificates" type="object" class="oe_stat_button"
+                                icon="fa-certificate" invisible="certificate_count == 0">
+                            <field name="certificate_count" widget="statinfo" string="Certificats"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="date" readonly="state != 'draft'"/>
+                            <field name="source" readonly="state != 'draft'"/>
+                            <field name="partner_id" readonly="state != 'draft'"/>
+                            <field name="factor_id" readonly="state != 'draft'"/>
+                        </group>
+                        <group>
+                            <field name="purchase_order_id" invisible="not purchase_order_id"/>
+                            <field name="sale_order_id" invisible="not sale_order_id"/>
+                            <field name="production_id" invisible="not production_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Produits" name="lines">
+                            <field name="line_ids" readonly="state != 'draft'">
+                                <tree editable="bottom">
+                                    <field name="product_id"/>
+                                    <field name="quantity"/>
+                                    <field name="uom_id"/>
+                                    <field name="intensity"/>
+                                    <field name="weight_kg" optional="show"/>
+                                    <field name="emission" sum="Total"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Activité" name="activity">
+                            <group>
+                                <group string="Transport et emballage">
+                                    <field name="transport_mode" readonly="state != 'draft'"/>
+                                    <field name="transport_distance" readonly="state != 'draft'"/>
+                                    <field name="packaging_weight" readonly="state != 'draft'"/>
+                                </group>
+                                <group string="Énergie (Scopes 1 et 2)">
+                                    <field name="electricity_kwh" readonly="state != 'draft'"/>
+                                    <field name="gas_kwh" readonly="state != 'draft'"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Résultat" name="result">
+                            <group>
+                                <group string="Détail">
+                                    <field name="material_emission"/>
+                                    <field name="transport_emission"/>
+                                    <field name="packaging_emission"/>
+                                </group>
+                                <group string="Par scope">
+                                    <field name="scope1_emission"/>
+                                    <field name="scope2_emission"/>
+                                    <field name="scope3_emission"/>
+                                    <field name="total_emission" class="fw-bold"/>
+                                    <field name="carbon_cost"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="notes"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_carbon_footprint_search" model="ir.ui.view">
+        <field name="name">carbon.footprint.search</field>
+        <field name="model">carbon.footprint</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="line_ids" string="Produit" filter_domain="[('line_ids.product_id', 'ilike', self)]"/>
+                <filter name="draft" string="Brouillon" domain="[('state', '=', 'draft')]"/>
+                <filter name="validated" string="Validées" domain="[('state', 'in', ('validated', 'certified'))]"/>
+                <separator/>
+                <filter name="src_purchase" string="Achats" domain="[('source', '=', 'purchase')]"/>
+                <filter name="src_sale" string="Ventes" domain="[('source', '=', 'sale')]"/>
+                <filter name="src_production" string="Fabrication" domain="[('source', '=', 'production')]"/>
+                <group expand="0" string="Regrouper par">
+                    <filter name="group_source" string="Origine" context="{'group_by': 'source'}"/>
+                    <filter name="group_partner" string="Partenaire" context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_state" string="Statut" context="{'group_by': 'state'}"/>
+                    <filter name="group_month" string="Mois" context="{'group_by': 'date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_carbon_footprint_graph" model="ir.ui.view">
+        <field name="name">carbon.footprint.graph</field>
+        <field name="model">carbon.footprint</field>
+        <field name="arch" type="xml">
+            <graph string="Émissions" type="bar">
+                <field name="date" interval="month"/>
+                <field name="source"/>
+                <field name="total_emission" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_carbon_footprint_pivot" model="ir.ui.view">
+        <field name="name">carbon.footprint.pivot</field>
+        <field name="model">carbon.footprint</field>
+        <field name="arch" type="xml">
+            <pivot string="Émissions">
+                <field name="date" interval="month" type="row"/>
+                <field name="source" type="col"/>
+                <field name="scope1_emission" type="measure"/>
+                <field name="scope2_emission" type="measure"/>
+                <field name="scope3_emission" type="measure"/>
+                <field name="total_emission" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="action_carbon_footprint" model="ir.actions.act_window">
+        <field name="name">Empreintes carbone</field>
+        <field name="res_model">carbon.footprint</field>
+        <field name="view_mode">tree,form,graph,pivot</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Aucune empreinte carbone</p>
+            <p>Elles sont créées automatiquement à la confirmation des achats, ventes et ordres de
+               fabrication, ou manuellement ici.</p>
+        </field>
+    </record>
+
+    <record id="action_server_validate_footprints" model="ir.actions.server">
+        <field name="name">Valider les empreintes</field>
+        <field name="model_id" ref="model_carbon_footprint"/>
+        <field name="binding_model_id" ref="model_carbon_footprint"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">records.action_validate()</field>
+    </record>
+
+    <!-- Facteurs d'émission -->
+    <record id="view_carbon_factor_tree" model="ir.ui.view">
+        <field name="name">carbon.factor.tree</field>
+        <field name="model">carbon.factor</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="electricity_factor"/>
+                <field name="transport_road_factor"/>
+                <field name="carbon_price"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_carbon_factor_form" model="ir.ui.view">
+        <field name="name">carbon.factor.form</field>
+        <field name="model">carbon.factor</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <widget name="web_ribbon" title="Archivé" bg_color="text-bg-danger" invisible="active"/>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="reference"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="carbon_price"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Énergie">
+                            <field name="electricity_factor"/>
+                            <field name="gas_factor"/>
+                        </group>
+                        <group string="Transport de marchandises">
+                            <field name="transport_road_factor"/>
+                            <field name="transport_rail_factor"/>
+                            <field name="transport_sea_factor"/>
+                            <field name="transport_air_factor"/>
+                            <field name="transport_multi_factor"/>
+                        </group>
+                        <group string="Emballage">
+                            <field name="packaging_factor"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_carbon_factor" model="ir.actions.act_window">
+        <field name="name">Facteurs d'émission</field>
+        <field name="res_model">carbon.factor</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

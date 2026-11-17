@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_esg_criteria_tree" model="ir.ui.view">
+        <field name="name">esg.criteria.tree</field>
+        <field name="model">esg.criteria</field>
+        <field name="arch" type="xml">
+            <tree editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="category"/>
+                <field name="weight"/>
+                <field name="description" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_esg_criteria" model="ir.actions.act_window">
+        <field name="name">Critères ESG</field>
+        <field name="res_model">esg.criteria</field>
+        <field name="view_mode">tree</field>
+    </record>
+
+    <record id="view_esg_scoring_tree" model="ir.ui.view">
+        <field name="name">esg.scoring.tree</field>
+        <field name="model">esg.scoring</field>
+        <field name="arch" type="xml">
+            <tree decoration-muted="state == 'cancelled'">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="date"/>
+                <field name="environmental_score" optional="show"/>
+                <field name="social_score" optional="show"/>
+                <field name="governance_score" optional="show"/>
+                <field name="total_score"/>
+                <field name="rating" widget="badge" decoration-success="rating in ('a', 'b')"
+                       decoration-warning="rating == 'c'" decoration-danger="rating in ('d', 'e')"/>
+                <field name="state" widget="badge" decoration-success="state == 'validated'"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_esg_scoring_form" model="ir.ui.view">
+        <field name="name">esg.scoring.form</field>
+        <field name="model">esg.scoring</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_validate" type="object" string="Valider" class="oe_highlight"
+                            invisible="state != 'draft'"/>
+                    <button name="action_load_criteria" type="object" string="Charger les critères manquants"
+                            invisible="state != 'draft'"/>
+                    <button name="action_cancel" type="object" string="Annuler" invisible="state == 'cancelled'"/>
+                    <button name="action_draft" type="object" string="Remettre en brouillon"
+                            invisible="state == 'draft'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,validated"/>
+                </header>
+                <sheet>
+                    <div class="oe_title"><h1><field name="name"/></h1></div>
+                    <div class="alert alert-info" role="alert" invisible="line_ids">
+                        Enregistrez l'évaluation : les critères ESG seront chargés automatiquement.
+                    </div>
+                    <group>
+                        <group>
+                            <field name="partner_id" readonly="state != 'draft'"/>
+                            <field name="date" readonly="state != 'draft'"/>
+                            <field name="evaluator_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group>
+                            <field name="environmental_score"/>
+                            <field name="social_score"/>
+                            <field name="governance_score"/>
+                            <field name="total_score" class="fw-bold"/>
+                            <field name="rating" widget="badge"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Critères" name="criteria">
+                            <field name="line_ids" readonly="state != 'draft'">
+                                <tree editable="bottom">
+                                    <field name="category"/>
+                                    <field name="name"/>
+                                    <field name="weight"/>
+                                    <field name="score"/>
+                                    <field name="evidence"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Observations" name="notes">
+                            <field name="notes"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_esg_scoring_search" model="ir.ui.view">
+        <field name="name">esg.scoring.search</field>
+        <field name="model">esg.scoring</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <filter name="validated" string="Validées" domain="[('state', '=', 'validated')]"/>
+                <filter name="at_risk" string="À risque (D / E)" domain="[('rating', 'in', ('d', 'e'))]"/>
+                <group expand="0" string="Regrouper par">
+                    <filter name="group_partner" string="Fournisseur" context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_rating" string="Note" context="{'group_by': 'rating'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_esg_scoring" model="ir.actions.act_window">
+        <field name="name">Évaluations ESG</field>
+        <field name="res_model">esg.scoring</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Fiche partenaire -->
+    <record id="view_partner_form_esg" model="ir.ui.view">
+        <field name="name">res.partner.form.esg</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="ESG" name="esg" groups="carbon_footprint_management.group_carbon_user">
+                    <group>
+                        <group>
+                            <field name="esg_score"/>
+                            <field name="esg_rating" widget="badge"/>
+                            <field name="esg_last_date"/>
+                        </group>
+                    </group>
+                    <button name="action_new_esg_scoring" type="object" string="Nouvelle évaluation ESG"
+                            class="btn-secondary"/>
+                    <field name="esg_scoring_ids" readonly="1">
+                        <tree>
+                            <field name="name"/>
+                            <field name="date"/>
+                            <field name="total_score"/>
+                            <field name="rating"/>
+                            <field name="state"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
